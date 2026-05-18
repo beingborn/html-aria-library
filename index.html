@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사이트맵 | 국립장애인도서관 접근성 라이브러리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 40px 30px;
+        }
+
+        .alert {
+            background: #fef3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            color: #856404;
+            font-size: 0.95em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #667eea;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-right: 1px solid #e9ecef;
+        }
+
+        th:last-child {
+            border-right: none;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            border-right: 1px solid #e9ecef;
+        }
+
+        td:last-child {
+            border-right: none;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .category-label {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 0.9em;
+        }
+
+        .file-title {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .file-title a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .file-title a:hover {
+            text-decoration: underline;
+            color: #764ba2;
+        }
+
+        .file-path {
+            color: #666;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .load-status {
+            color: #999;
+            font-size: 0.85em;
+        }
+
+        .load-status.success {
+            color: #28a745;
+        }
+
+        .load-status.error {
+            color: #dc3545;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 사이트맵</h1>
+            <p>국립장애인도서관 접근성 라이브러리</p>
+        </header>
+
+        <main>
+            <div class="alert" id="file-protocol-alert">
+                <div class="alert-title">⚠️ 주의</div>
+                <div class="alert-message">
+                    현재 <code>file://</code> 프로토콜로 열려 있습니다.
+                    사이트맵이 정상 작동하려면 VS Code Live Server나 로컬 HTTP 서버에서 실행하세요.
+                </div>
+            </div>
+
+            <div class="loading" id="sitemap-status">
+                로딩 중... 페이지 목록을 가져오는 중입니다.
+            </div>
+
+            <table id="sitemap-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">카테고리</th>
+                        <th style="width: 45%;">제목</th>
+                        <th style="width: 40%;">파일 경로</th>
+                    </tr>
+                </thead>
+                <tbody id="sitemap-body">
+                </tbody>
+            </table>
+
+            <div class="empty-message" id="empty-message" style="display: none;">
+                로드할 페이지가 없습니다.
+            </div>
+        </main>
+
+        <footer>
+            <small>모든 페이지 정보는 동적으로 로드됩니다. 새 파일 추가 시 JavaScript 파일 목록을 업데이트하세요.</small>
+        </footer>
+    </div>
+
+    <script>
+        // 사이트맵에 포함할 HTML 파일 목록
+        // 새 파일 추가 시 이 배열에만 경로를 추가하면 됩니다
+        const FILES = [
+            { path: 'design-system-v2.html', category: '디자인 시스템' },
+            { path: 'sfr-003/aria-solution.html', category: 'SFR-003' },
+        ];
+
+        // 각 HTML 파일에서 <title> 태그 값을 동적으로 추출
+        async function fetchTitle(path) {
+            try {
+                const response = await fetch(path);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const html = await response.text();
+                const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+                return titleMatch ? titleMatch[1].trim() : null;
+            } catch (error) {
+                console.error(`파일 로드 실패 (${path}):`, error.message);
+                return null;
+            }
+        }
+
+        // 파일 프로토콜 감지
+        function detectFileProtocol() {
+            return window.location.protocol === 'file:';
+        }
+
+        // 사이트맵 테이블 렌더링
+        async function renderSitemap() {
+            const isFileProtocol = detectFileProtocol();
+            const alertElement = document.getElementById('file-protocol-alert');
+            const loadingElement = document.getElementById('sitemap-status');
+            const tableElement = document.getElementById('sitemap-table');
+            const tbodyElement = document.getElementById('sitemap-body');
+            const emptyElement = document.getElementById('empty-message');
+
+            // file:// 프로토콜 경고 표시
+            if (isFileProtocol) {
+                alertElement.classList.add('show');
+            }
+
+            try {
+                // 모든 파일의 title을 병렬로 로드
+                const results = await Promise.all(
+                    FILES.map(async (file) => {
+                        const title = await fetchTitle(file.path);
+                        return {
+                            ...file,
+                            title: title,
+                            loaded: !!title
+                        };
+                    })
+                );
+
+                // 테이블 행 생성
+                if (results.length > 0) {
+                    results.forEach((file, index) => {
+                        const row = document.createElement('tr');
+                        const titleText = file.title || file.path;
+                        const statusClass = file.loaded ? 'success' : 'error';
+                        const statusText = file.loaded ? '✓ 로드됨' : '✗ 로드 실패';
+
+                        row.innerHTML = `
+                            <td><span class="category-label">${escapeHtml(file.category)}</span></td>
+                            <td>
+                                <div class="file-title">
+                                    <a href="${escapeHtml(file.path)}" target="_self">
+                                        ${escapeHtml(titleText)}
+                                    </a>
+                                </div>
+                                <div class="load-status ${statusClass}">${statusText}</div>
+                            </td>
+                            <td><code class="file-path">${escapeHtml(file.path)}</code></td>
+                        `;
+                        tbodyElement.appendChild(row);
+                    });
+
+                    tableElement.style.display = 'table';
+                } else {
+                    emptyElement.style.display = 'block';
+                }
+
+                loadingElement.style.display = 'none';
+            } catch (error) {
+                console.error('사이트맵 렌더링 중 오류:', error);
+                loadingElement.innerHTML = '❌ 사이트맵을 로드할 수 없습니다.';
+            }
+        }
+
+        // HTML 특수 문자 이스케이핑
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, (char) => map[char]);
+        }
+
+        // 페이지 로드 시 사이트맵 렌더링
+        document.addEventListener('DOMContentLoaded', renderSitemap);
+    </script>
+</body>
+</html>

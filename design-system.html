@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>국립장애인도서관 — 디자인 시스템 v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   KOPUB World 2.0 TTF — @font-face 선언
+   ※ 로컬 설치 우선 → 없을 경우 Noto Sans KR 폴백
+   ============================================================ */
+@font-face {
+  font-family: 'KoPub';
+  src: local('KoPubWorld돋움체 Bold'), local('KoPubWorldDotum Bold');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'KoPub';
+  src: local('KoPubWorld돋움체 Medium'), local('KoPubWorldDotum Medium');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'KoPub';
+  src: local('KoPubWorld돋움체 Light'), local('KoPubWorldDotum Light');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* ============================================================
+   DESIGN TOKENS — 슬라이드 XML 분석 추출값 기반
+   ============================================================ */
+:root {
+  /* ── Primary Color Scale ── */
+  --color-primary-deep:     #002060;   /* 다크 네이비 딥 (accent, 강조 헤더) */
+  --color-primary:          #1F2D5A;   /* 다크 네이비 (메인 브랜드, 505회 사용) */
+  --color-primary-mid:      #286080;   /* 미드 틸 블루 (theme accent2) */
+  --color-primary-light:    #5B7FB8;   /* 미디엄 블루 (82회 사용, 강조 요소) */
+  --color-primary-teal:     #4BACC6;   /* 브라이트 틸 (theme accent5, 링크/CTA) */
+
+  /* ── Secondary / Status ── */
+  --color-success:          #7CB342;   /* 그린 (To-Be / 긍정 지표, 89회) */
+  --color-success-light:    #E8F1DC;   /* 그린 라이트 BG */
+  --color-danger:           #C00000;   /* 레드 (경고 / 필수 마커) */
+  --color-warning:          #F79646;   /* 오렌지 (theme accent6) */
+
+  /* ── Background Scale ── */
+  --color-bg-white:         #FFFFFF;
+  --color-bg-light:         #EEF3F9;   /* 섹션 배경 라이트 블루 (104회) */
+  --color-bg-mid:           #DCE6F2;   /* 섹션 배경 미드 블루 (18회) */
+  --color-bg-page:          #F7F9FC;   /* 페이지 전체 배경 (사용 권장) */
+
+  /* ── Text Scale ── */
+  --color-text-primary:     #1A1A1A;   /* 주요 본문 텍스트 (132회) */
+  --color-text-secondary:   #595959;   /* 보조 텍스트 (403회, 최다) */
+  --color-text-tertiary:    #404040;   /* 보조2 텍스트 */
+  --color-text-disabled:    #BFBFBF;   /* 비활성 / 구분선 (50회) */
+  --color-text-on-dark:     #FFFFFF;   /* 어두운 배경 위 텍스트 */
+
+  /* ── Border / Divider ── */
+  --color-border:           #BFBFBF;
+  --color-border-light:     #DCE6F2;
+
+  /* ── Font System ── */
+  --font-family: 'KoPub', 'Noto Sans KR', '맑은 고딕', 'Malgun Gothic', sans-serif;
+
+  /* ── Type Scale (Web 기준, A4 PPT 수치를 웹으로 환산) ──
+     PPT 원본(pt) → 웹 환산 기준:
+       PPT 9pt  → 본문 14px
+       PPT 11pt → 소제목 16px
+       PPT 12pt → 중간 18px
+       PPT 16pt → 큰제목 24px
+       (헤딩 레벨은 웹 표준에 맞게 확장)          */
+  --text-xs:    11px;   /* 캡션, 메타 */
+  --text-sm:    13px;   /* 보조 설명 (PPT 8.5pt 대응) */
+  --text-base:  14px;   /* 본문 (PPT 9pt 대응) */
+  --text-md:    16px;   /* 소제목, 강조 본문 (PPT 11pt 대응) */
+  --text-lg:    18px;   /* 중간 헤딩 (PPT 12pt 대응) */
+  --text-xl:    22px;   /* 섹션 타이틀 */
+  --text-2xl:   26px;   /* 페이지 타이틀 (PPT 16pt 대응) */
+  --text-3xl:   32px;   /* 대형 헤딩 */
+
+  --font-weight-light:   300;
+  --font-weight-regular: 400;
+  --font-weight-medium:  500;
+  --font-weight-bold:    700;
+
+  --line-height-tight:   1.4;
+  --line-height-normal:  1.6;
+  --line-height-loose:   1.8;
+
+  /* ── Container / Layout (A4 PPT 827×1169px 분석 기반) ──
+     슬라이드 분석 결과:
+       슬라이드 전체 너비 : 827px
+       좌측 여백 : 71px
+       콘텐츠 영역 : 686px (x:71 ~ x:757)
+       내부 들여쓰기 영역 : 599px (x:158 ~)
+       우측 여백 : 70px                          */
+  --container-slide:    827px;    /* A4 슬라이드 기준 */
+  --container-content:  686px;    /* 메인 콘텐츠 영역 */
+  --container-inner:    599px;    /* 들여쓰기 내부 콘텐츠 */
+  --container-narrow:   480px;    /* 좁은 컨텍스트 */
+
+  --margin-slide:       71px;     /* 슬라이드 좌우 여백 */
+  --margin-inner:       87px;     /* 들여쓰기 추가 여백 (158-71) */
+
+  /* ── Spacing Scale ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Border Radius ── */
+  --radius-sm:  4px;
+  --radius-md:  8px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+
+  /* ── Shadow ── */
+  --shadow-sm:  0 1px 4px rgba(31,45,90,.08);
+  --shadow-md:  0 4px 16px rgba(31,45,90,.12);
+  --shadow-lg:  0 8px 32px rgba(31,45,90,.16);
+}
+
+/* ============================================================
+   BASE RESET & PAGE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+}
+
+/* ── Page Header ── */
+.page-header {
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-10) var(--space-8);
+  border-bottom: 3px solid var(--color-primary-teal);
+}
+.page-header__badge {
+  display: inline-block;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+.page-header h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--space-2);
+}
+.page-header__sub {
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,.65);
+}
+.page-header__meta {
+  margin-top: var(--space-6);
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+.page-header__meta-item {
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,.55);
+}
+.page-header__meta-item strong {
+  color: rgba(255,255,255,.9);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Layout ── */
+.page-body {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-8) var(--space-16);
+}
+
+/* ── Section ── */
+.ds-section {
+  margin-bottom: var(--space-16);
+}
+.ds-section__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid var(--color-primary);
+}
+.ds-section__num {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-teal);
+  letter-spacing: .1em;
+}
+.ds-section__title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+}
+.ds-section__desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-disabled);
+  margin-left: auto;
+}
+
+/* ── Notice Box ── */
+.ds-notice {
+  background: #FFF8EE;
+  border-left: 3px solid var(--color-warning);
+  padding: var(--space-4) var(--space-5);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+}
+.ds-notice strong { color: var(--color-text-primary); }
+
+/* ============================================================
+   01. COLOR SYSTEM
+   ============================================================ */
+.color-group {
+  margin-bottom: var(--space-8);
+}
+.color-group__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-disabled);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+}
+.color-row {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.color-card {
+  width: 148px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+  border: 1px solid var(--color-border-light);
+}
+.color-card__swatch {
+  height: 80px;
+  width: 100%;
+}
+.color-card__info {
+  padding: var(--space-3) var(--space-3);
+}
+.color-card__name {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+.color-card__hex {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-disabled);
+  margin-bottom: 4px;
+}
+.color-card__use {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+/* ── Color Usage Grid ── */
+.color-usage {
+  margin-top: var(--space-8);
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+.color-usage-header {
+  background: var(--color-bg-light);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border-light);
+}
+.color-usage-row {
+  display: grid;
+  grid-template-columns: 24px 120px 100px 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: var(--text-sm);
+}
+.color-usage-row:last-child { border-bottom: none; }
+.color-usage-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.color-usage-varname {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--color-primary-mid);
+}
+.color-usage-hex {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--color-text-disabled);
+}
+.color-usage-desc {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+/* ============================================================
+   02. TYPOGRAPHY SYSTEM
+   ============================================================ */
+.type-scale {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  margin-bottom: var(--space-6);
+}
+.type-scale-header {
+  background: var(--color-bg-light);
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  display: grid;
+  grid-template-columns: 100px 80px 80px 1fr;
+  gap: var(--space-4);
+}
+.type-row {
+  display: grid;
+  grid-template-columns: 100px 80px 80px 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+}
+.type-row:last-child { border-bottom: none; }
+.type-row__tag {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--color-primary-mid);
+}
+.type-row__size {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+}
+.type-row__weight {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+}
+.type-row__sample {
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+}
+
+.font-weight-demo {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  background: #fff;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  margin-bottom: var(--space-6);
+}
+.font-weight-item { flex: 1; min-width: 160px; }
+.font-weight-item__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+  letter-spacing: .08em;
+  margin-bottom: var(--space-2);
+}
+.font-weight-item__sample {
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+}
+
+.font-note {
+  background: var(--color-bg-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.font-note h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+.font-note code {
+  font-family: 'Courier New', monospace;
+  background: rgba(31,45,90,.08);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  color: var(--color-primary);
+}
+.font-note ul { padding-left: var(--space-5); margin-top: var(--space-2); }
+.font-note li { margin-bottom: var(--space-1); }
+
+/* ============================================================
+   03. CONTAINER SYSTEM
+   ============================================================ */
+.container-demo {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+}
+.container-visual {
+  position: relative;
+  height: 180px;
+  min-width: 500px;
+  background: var(--color-bg-page);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+.container-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+}
+.cb-slide {
+  left: 4%;
+  width: 92%;
+  background: rgba(31,45,90,.06);
+  border: 1px dashed rgba(31,45,90,.25);
+  color: var(--color-primary);
+}
+.cb-content {
+  left: 12.8%;
+  width: 74.4%;
+  background: rgba(91,127,184,.12);
+  border: 1px solid rgba(91,127,184,.4);
+  color: var(--color-primary-light);
+  top: 35%;
+}
+.cb-inner {
+  left: 22.9%;
+  width: 63.1%;
+  background: rgba(75,172,198,.12);
+  border: 1px solid rgba(75,172,198,.4);
+  color: var(--color-primary-teal);
+  top: 65%;
+}
+
+.container-legend {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+.container-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+.container-legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+}
+
+/* Container Table */
+.container-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  margin-bottom: var(--space-6);
+}
+.container-table th {
+  background: var(--color-bg-light);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--text-xs);
+  letter-spacing: .05em;
+  padding: var(--space-3) var(--space-5);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.container-table td {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+  color: var(--color-text-secondary);
+}
+.container-table tr:last-child td { border-bottom: none; }
+.container-table td:first-child {
+  font-family: 'Courier New', monospace;
+  color: var(--color-primary-mid);
+  font-size: 12px;
+}
+.container-table td:nth-child(2) {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* Spacing Scale */
+.spacing-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: #fff;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+.spacing-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+.spacing-row__label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--color-primary-mid);
+  width: 120px;
+  flex-shrink: 0;
+}
+.spacing-row__bar {
+  height: 20px;
+  background: linear-gradient(90deg, var(--color-primary-light), var(--color-primary-teal));
+  border-radius: 3px;
+  opacity: .7;
+}
+.spacing-row__val {
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+  flex-shrink: 0;
+}
+
+/* ── Page Footer ── */
+.page-footer {
+  margin-top: var(--space-16);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border-light);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-disabled);
+}
+.page-footer strong { color: var(--color-text-secondary); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     PAGE HEADER
+══════════════════════════════════════════════ -->
+<header class="page-header">
+  <div class="page-header__badge">Design System · v0.1 · Test</div>
+  <h1>국립장애인도서관 서비스 고도화<br>디자인 시스템</h1>
+  <p class="page-header__sub">제안서 기능 요구사항 시각화를 위한 공통 디자인 토큰 정의서</p>
+  <div class="page-header__meta">
+    <span class="page-header__meta-item"><strong>폰트</strong> · KoPub World 2.0 TTF</span>
+    <span class="page-header__meta-item"><strong>기준</strong> · 제안서 초안 PPTX XML 분석값</span>
+    <span class="page-header__meta-item"><strong>상태</strong> · 디자인 가이드 수령 전 임시 토큰 (컨펌 필요)</span>
+    <span class="page-header__meta-item"><strong>작성일</strong> · 2026-05-18</span>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- 공지 -->
+  <div class="ds-notice">
+    ⚠️ <strong>임시 디자인 토큰입니다.</strong> 공식 디자인 가이드 문서 수령 후 HEX값 및 수치를 재검토·업데이트 해야 합니다.
+    현재 값은 제안서 초안 PPTX 파일의 XML 데이터에서 직접 추출한 수치입니다.
+  </div>
+
+  <!-- ═══════════════════════════════════
+       01. COLOR SYSTEM
+  ════════════════════════════════════ -->
+  <section class="ds-section">
+    <div class="ds-section__header">
+      <span class="ds-section__num">01</span>
+      <h2 class="ds-section__title">컬러 시스템</h2>
+      <span class="ds-section__desc">PPTX XML solidFill 분석 · 총 16종 색상 추출</span>
+    </div>
+
+    <!-- Primary -->
+    <div class="color-group">
+      <p class="color-group__label">Primary — 브랜드 메인 컬러</p>
+      <div class="color-row">
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#002060;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Primary Deep</div>
+            <div class="color-card__hex">#002060</div>
+            <div class="color-card__use">강조 헤더, 딥 포인트</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#1F2D5A;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Primary</div>
+            <div class="color-card__hex">#1F2D5A</div>
+            <div class="color-card__use">메인 브랜드, 헤더 배경<br><strong style="color:#1F2D5A">· 최다 사용 (505회)</strong></div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#286080;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Primary Mid</div>
+            <div class="color-card__hex">#286080</div>
+            <div class="color-card__use">서브 헤딩, 코드 텍스트</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#5B7FB8;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Primary Light</div>
+            <div class="color-card__hex">#5B7FB8</div>
+            <div class="color-card__use">강조 요소, 아이콘</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#4BACC6;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Primary Teal</div>
+            <div class="color-card__hex">#4BACC6</div>
+            <div class="color-card__use">CTA 버튼, 링크, 하이라이트</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary/Status -->
+    <div class="color-group">
+      <p class="color-group__label">Status — 상태 / 시맨틱 컬러</p>
+      <div class="color-row">
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#7CB342;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Success</div>
+            <div class="color-card__hex">#7CB342</div>
+            <div class="color-card__use">To-Be, 긍정 지표<br>(89회, 개선안 표시)</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#C00000;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Danger</div>
+            <div class="color-card__hex">#C00000</div>
+            <div class="color-card__use">필수 마커, 경고</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#F79646;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Warning</div>
+            <div class="color-card__hex">#F79646</div>
+            <div class="color-card__use">주의 사항, 알림 (theme accent6)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backgrounds -->
+    <div class="color-group">
+      <p class="color-group__label">Background — 배경 컬러 스케일</p>
+      <div class="color-row">
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#F7F9FC; border-bottom:1px solid #DCE6F2;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">BG Page</div>
+            <div class="color-card__hex">#F7F9FC</div>
+            <div class="color-card__use">페이지 전체 배경 (권장)</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#EEF3F9; border-bottom:1px solid #DCE6F2;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">BG Light</div>
+            <div class="color-card__hex">#EEF3F9</div>
+            <div class="color-card__use">섹션 배경, 카드 BG<br>(104회 사용)</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#DCE6F2; border-bottom:1px solid #BFBFBF;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">BG Mid</div>
+            <div class="color-card__hex">#DCE6F2</div>
+            <div class="color-card__use">구분선 배경, 강조 BG<br>(18회 사용)</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#FFFFFF; border-bottom:1px solid #DCE6F2;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">White</div>
+            <div class="color-card__hex">#FFFFFF</div>
+            <div class="color-card__use">카드 배경, 입력 필드</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text -->
+    <div class="color-group">
+      <p class="color-group__label">Text — 텍스트 컬러 스케일</p>
+      <div class="color-row">
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#1A1A1A;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Text Primary</div>
+            <div class="color-card__hex">#1A1A1A</div>
+            <div class="color-card__use">주요 제목, 핵심 본문 (132회)</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#595959;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Text Secondary</div>
+            <div class="color-card__hex">#595959</div>
+            <div class="color-card__use">일반 본문<br><strong style="color:#595959">· 최다 사용 (403회)</strong></div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#404040;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Text Tertiary</div>
+            <div class="color-card__hex">#404040</div>
+            <div class="color-card__use">보조 설명, 캡션</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#BFBFBF;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Text Disabled</div>
+            <div class="color-card__hex">#BFBFBF</div>
+            <div class="color-card__use">비활성, 구분선, 플레이스홀더</div>
+          </div>
+        </div>
+        <div class="color-card">
+          <div class="color-card__swatch" style="background:#FFFFFF; border-bottom:1px solid #DCE6F2;"></div>
+          <div class="color-card__info">
+            <div class="color-card__name">Text On Dark</div>
+            <div class="color-card__hex">#FFFFFF</div>
+            <div class="color-card__use">다크 배경 위 텍스트</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSS Variable 참조표 -->
+    <div class="color-usage">
+      <div class="color-usage-header">CSS 변수 참조표 (tokens.css)</div>
+      <div class="color-usage-row" style="background:var(--color-bg-light); font-size:11px; font-weight:700; color:var(--color-text-disabled);">
+        <div></div><div>변수명</div><div>HEX</div><div>사용 위치</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#1F2D5A;"></div>
+        <div class="color-usage-varname">--color-primary</div>
+        <div class="color-usage-hex">#1F2D5A</div>
+        <div class="color-usage-desc">헤더 배경, 제목, 섹션 구분선</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#4BACC6;"></div>
+        <div class="color-usage-varname">--color-primary-teal</div>
+        <div class="color-usage-hex">#4BACC6</div>
+        <div class="color-usage-desc">CTA 버튼, 링크, 강조 뱃지</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#7CB342;"></div>
+        <div class="color-usage-varname">--color-success</div>
+        <div class="color-usage-hex">#7CB342</div>
+        <div class="color-usage-desc">To-Be 박스, 완료 상태, 긍정 수치</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#C00000;"></div>
+        <div class="color-usage-varname">--color-danger</div>
+        <div class="color-usage-hex">#C00000</div>
+        <div class="color-usage-desc">필수 항목 표시, 오류 메시지</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#EEF3F9;"></div>
+        <div class="color-usage-varname">--color-bg-light</div>
+        <div class="color-usage-hex">#EEF3F9</div>
+        <div class="color-usage-desc">추가 제안 섹션 배경, 카드 배경</div>
+      </div>
+      <div class="color-usage-row">
+        <div class="color-usage-dot" style="background:#595959;"></div>
+        <div class="color-usage-varname">--color-text-secondary</div>
+        <div class="color-usage-hex">#595959</div>
+        <div class="color-usage-desc">전체 본문 (기본 텍스트 컬러)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       02. TYPOGRAPHY SYSTEM
+  ════════════════════════════════════ -->
+  <section class="ds-section">
+    <div class="ds-section__header">
+      <span class="ds-section__num">02</span>
+      <h2 class="ds-section__title">타이포그래피 시스템</h2>
+      <span class="ds-section__desc">KoPub World 2.0 TTF 기반 / PPT → 웹 환산 스케일</span>
+    </div>
+
+    <!-- 폰트 소개 -->
+    <div class="font-note" style="margin-bottom:var(--space-6);">
+      <h4>🔤 KoPub World 2.0 TTF 적용 방법</h4>
+      <p style="margin-bottom:var(--space-3);">공공누리 폰트로 무료 사용 가능. 아래 두 가지 방식으로 적용합니다:</p>
+      <ul>
+        <li><strong>로컬 우선</strong>: <code>local('KoPubWorld돋움체 Bold')</code> → 시스템 설치 시 자동 적용</li>
+        <li><strong>폴백</strong>: Noto Sans KR (Google Fonts CDN) → 미설치 환경 대응</li>
+        <li><strong>최종 폴백</strong>: <code>맑은 고딕</code> → Windows 기본 한글 폰트</li>
+      </ul>
+      <p style="margin-top:var(--space-3);">⚠️ 기획팀 공유 HTML에서 KOPUB가 표시되지 않을 경우, 폰트 다운로드 링크를 함께 제공하거나 웹폰트 CDN 경로를 확인해야 합니다.</p>
+    </div>
+
+    <!-- 폰트 웨이트 -->
+    <p style="font-size:var(--text-xs); font-weight:700; color:var(--color-text-disabled); letter-spacing:.1em; text-transform:uppercase; margin-bottom:var(--space-3);">Font Weight</p>
+    <div class="font-weight-demo">
+      <div class="font-weight-item">
+        <div class="font-weight-item__label">Light · 300</div>
+        <div class="font-weight-item__sample" style="font-weight:300;">장애인 도서관</div>
+      </div>
+      <div class="font-weight-item">
+        <div class="font-weight-item__label">Regular · 400</div>
+        <div class="font-weight-item__sample" style="font-weight:400;">장애인 도서관</div>
+      </div>
+      <div class="font-weight-item">
+        <div class="font-weight-item__label">Medium · 500</div>
+        <div class="font-weight-item__sample" style="font-weight:500;">장애인 도서관</div>
+      </div>
+      <div class="font-weight-item">
+        <div class="font-weight-item__label">Bold · 700</div>
+        <div class="font-weight-item__sample" style="font-weight:700;">장애인 도서관</div>
+      </div>
+    </div>
+
+    <!-- 타입 스케일 -->
+    <p style="font-size:var(--text-xs); font-weight:700; color:var(--color-text-disabled); letter-spacing:.1em; text-transform:uppercase; margin-bottom:var(--space-3);">Type Scale</p>
+    <div class="type-scale">
+      <div class="type-scale-header">
+        <span>변수명</span><span>크기</span><span>PPT 원본</span><span>샘플 텍스트</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-3xl</span>
+        <span class="type-row__size">32px</span>
+        <span class="type-row__weight">— (확장)</span>
+        <span class="type-row__sample" style="font-size:32px; font-weight:700; color:var(--color-primary);">대형 헤딩</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-2xl</span>
+        <span class="type-row__size">26px</span>
+        <span class="type-row__weight">PPT 16pt 대응</span>
+        <span class="type-row__sample" style="font-size:26px; font-weight:700; color:var(--color-primary);">페이지 타이틀</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-xl</span>
+        <span class="type-row__size">22px</span>
+        <span class="type-row__weight">— (확장)</span>
+        <span class="type-row__sample" style="font-size:22px; font-weight:700;">섹션 타이틀</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-lg</span>
+        <span class="type-row__size">18px</span>
+        <span class="type-row__weight">PPT 12pt 대응</span>
+        <span class="type-row__sample" style="font-size:18px; font-weight:500;">중간 헤딩 / 카드 타이틀</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-md</span>
+        <span class="type-row__size">16px</span>
+        <span class="type-row__weight">PPT 11pt 대응</span>
+        <span class="type-row__sample" style="font-size:16px; font-weight:500;">소제목 / 강조 본문</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-base</span>
+        <span class="type-row__size">14px</span>
+        <span class="type-row__weight">PPT 9pt 대응 (최다)</span>
+        <span class="type-row__sample" style="font-size:14px; font-weight:400;">기본 본문 텍스트. 이용자 최적화 서비스를 제공합니다.</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-sm</span>
+        <span class="type-row__size">13px</span>
+        <span class="type-row__weight">PPT 8.5pt 대응</span>
+        <span class="type-row__sample" style="font-size:13px; color:var(--color-text-secondary);">보조 설명 / 부가 정보 텍스트</span>
+      </div>
+      <div class="type-row">
+        <span class="type-row__tag">--text-xs</span>
+        <span class="type-row__size">11px</span>
+        <span class="type-row__weight">PPT 8pt 대응</span>
+        <span class="type-row__sample" style="font-size:11px; color:var(--color-text-disabled);">캡션 / 메타 정보 / 라벨</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════
+       03. CONTAINER SYSTEM
+  ════════════════════════════════════ -->
+  <section class="ds-section">
+    <div class="ds-section__header">
+      <span class="ds-section__num">03</span>
+      <h2 class="ds-section__title">컨테이너 & 스페이싱 시스템</h2>
+      <span class="ds-section__desc">A4 PPT(827×1169px) XML 레이아웃 분석 추출값</span>
+    </div>
+
+    <!-- Container Visual -->
+    <p style="font-size:var(--text-xs); font-weight:700; color:var(--color-text-disabled); letter-spacing:.1em; text-transform:uppercase; margin-bottom:var(--space-3);">Container 시각화</p>
+    <div class="container-demo">
+      <div class="container-visual">
+        <div class="container-bar cb-slide">슬라이드 캔버스 · 827px</div>
+        <div class="container-bar cb-content">콘텐츠 영역 · 686px (여백 71px)</div>
+        <div class="container-bar cb-inner">내부 들여쓰기 · 599px (여백 158px)</div>
+      </div>
+      <div class="container-legend">
+        <div class="container-legend-item">
+          <div class="container-legend-dot" style="background:rgba(31,45,90,.15); border:1px dashed rgba(31,45,90,.4);"></div>
+          슬라이드 캔버스 827px
+        </div>
+        <div class="container-legend-item">
+          <div class="container-legend-dot" style="background:rgba(91,127,184,.2); border:1px solid rgba(91,127,184,.5);"></div>
+          콘텐츠 영역 686px
+        </div>
+        <div class="container-legend-item">
+          <div class="container-legend-dot" style="background:rgba(75,172,198,.2); border:1px solid rgba(75,172,198,.5);"></div>
+          내부 들여쓰기 599px
+        </div>
+      </div>
+    </div>
+
+    <!-- Container Table -->
+    <p style="font-size:var(--text-xs); font-weight:700; color:var(--color-text-disabled); letter-spacing:.1em; text-transform:uppercase; margin-bottom:var(--space-3);">Container 규격표</p>
+    <table class="container-table">
+      <thead>
+        <tr>
+          <th>CSS 변수</th>
+          <th>크기</th>
+          <th>PPT 출처</th>
+          <th>사용 위치</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>--container-slide</td>
+          <td>827px</td>
+          <td>슬라이드 전체 (A4 96dpi)</td>
+          <td>최외각 래퍼, 페이지 전체 너비 기준</td>
+        </tr>
+        <tr>
+          <td>--container-content</td>
+          <td>686px</td>
+          <td>x:71 ~ x:757 (주요 콘텐츠 블록)</td>
+          <td>메인 콘텐츠 영역 (다이어그램, 섹션 카드)</td>
+        </tr>
+        <tr>
+          <td>--container-inner</td>
+          <td>599px</td>
+          <td>x:158 ~ x:757 (들여쓰기 콘텐츠)</td>
+          <td>중첩 카드, 세부 설명, 테이블 내부</td>
+        </tr>
+        <tr>
+          <td>--container-narrow</td>
+          <td>480px</td>
+          <td>— (웹 모바일 확장 권장)</td>
+          <td>모달, 좁은 폼, 모바일 뷰포트</td>
+        </tr>
+        <tr>
+          <td>--margin-slide</td>
+          <td>71px</td>
+          <td>슬라이드 좌측 여백 (x offset)</td>
+          <td>섹션 좌우 패딩 기준</td>
+        </tr>
+        <tr>
+          <td>--margin-inner</td>
+          <td>87px</td>
+          <td>추가 들여쓰기 (158 - 71)</td>
+          <td>하위 콘텐츠 들여쓰기 여백</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Spacing Scale -->
+    <p style="font-size:var(--text-xs); font-weight:700; color:var(--color-text-disabled); letter-spacing:.1em; text-transform:uppercase; margin-bottom:var(--space-3);">Spacing Scale</p>
+    <div class="spacing-grid">
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-1 · 4px</span>
+        <div class="spacing-row__bar" style="width:4px;"></div>
+        <span class="spacing-row__val">아이콘 간격</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-2 · 8px</span>
+        <div class="spacing-row__bar" style="width:8px;"></div>
+        <span class="spacing-row__val">라벨-입력 간격</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-3 · 12px</span>
+        <div class="spacing-row__bar" style="width:12px;"></div>
+        <span class="spacing-row__val">카드 내부 패딩</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-4 · 16px</span>
+        <div class="spacing-row__bar" style="width:16px;"></div>
+        <span class="spacing-row__val">섹션 내 아이템 간격</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-6 · 24px</span>
+        <div class="spacing-row__bar" style="width:24px;"></div>
+        <span class="spacing-row__val">카드 패딩, 섹션 간격</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-8 · 32px</span>
+        <div class="spacing-row__bar" style="width:32px;"></div>
+        <span class="spacing-row__val">섹션 간격, 그룹 구분</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-10 · 40px</span>
+        <div class="spacing-row__bar" style="width:40px;"></div>
+        <span class="spacing-row__val">페이지 헤더 패딩</span>
+      </div>
+      <div class="spacing-row">
+        <span class="spacing-row__label">--space-16 · 64px</span>
+        <div class="spacing-row__bar" style="width:64px;"></div>
+        <span class="spacing-row__val">섹션 간 대형 여백</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Footer -->
+<footer class="page-footer">
+  <p><strong>국립장애인도서관 서비스 고도화 사업</strong> · 디자인 시스템 v0.1</p>
+  <p style="margin-top:4px;">PPTX XML 분석 기반 임시 토큰 · 공식 가이드 수령 후 업데이트 필요</p>
+</footer>
+
+</body>
+</html>
