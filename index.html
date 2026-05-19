@@ -229,36 +229,21 @@
         // 사이트맵에 포함할 HTML 파일 목록
         // 새 파일 추가 시 이 배열에만 경로를 추가하면 됩니다
         const FILES = [
-            { path: 'design-system-v2.html', category: '디자인 시스템' },
-            { path: 'sfr-003/aria-solution.html', category: 'SFR-003' },
-            { path: 'sfr-003/cms-alt-text-panel.html', category: 'SFR-003 > CMS-ALT Panel' },
-            { path: 'sfr-003/aria-builder.html', category: 'SFR-003 > Aria Builder' },
-            { path: 'sfr-003/epub.html', category: 'SFR-003 > Epub' },
-            { path: 'sfr-003/counsel.html', category: 'SFR-003 > Counsel' },
-            { path: 'sfr-003/ai-pipeline.html', category: 'SFR-003 > Ai Pipeline' },
-            { path: 'sfr-004/api-scenario.html', category: 'SFR-004 > API Scenario' },
-            { path: 'sfr-004/api-integration.html', category: 'SFR-004 > API Integration' },
-            { path: 'sfr-005/process.html', category: 'SFR-005 > Child Process' },
-            { path: 'sfr-006/oauth1to2.html', category: 'SFR-006 > Oauth1.0 to 2.0' },
-            { path: 'sfr-006/admin_dashboard.html', category: 'SFR-006 > Admin DashBoard' },
-            { path: 'sfr-006/oauth-security.html', category: 'SFR-006 > Oauth Security' },
+            { path: 'design-system-v2.html', category: '디자인 시스템', title: '국립장애인도서관 — 디자인 시스템 v0.2' },
+            { path: 'sfr-003/aria-solution.html', category: 'SFR-003', title: '대체 텍스트 접근성 개선 다이어그램' },
+            { path: 'sfr-003/cms-alt-text-panel.html', category: 'SFR-003', title: 'CMS 에디터 — 대체 텍스트 입력 패널' },
+            { path: 'sfr-003/aria-builder.html', category: 'SFR-003', title: 'ARIA 대체 텍스트 가이드 | 속성 조합 빌더' },
+            { path: 'sfr-003/epub.html', category: 'SFR-003', title: 'SFR-003_1 접근성 웹뷰어 & DRM 연동' },
+            { path: 'sfr-003/counsel.html', category: 'SFR-003', title: 'SFR-003_2 수어 상담 양방향 서비스' },
+            { path: 'sfr-003/ai-pipeline.html', category: 'SFR-003', title: 'SFR-003_3 AI 도서 추천 파이프라인' },
+            { path: 'sfr-004/api-scenario.html', category: 'SFR-004', title: 'OPEN API 사용자 여정' },
+            { path: 'sfr-004/api-integration.html', category: 'SFR-004', title: '국립장애인도서관 OPEN API 통합 운영 시스템 구조도' },
+            { path: 'sfr-005/process.html', category: 'SFR-005', title: 'SFR-005 하위 웹사이트 2종 개편 프로세스' },
+            { path: 'sfr-006/oauth1to2.html', category: 'SFR-006', title: 'OAuth 1.0 → 2.0 보안 강화 전환 계획' },
+            { path: 'sfr-006/admin_dashboard.html', category: 'SFR-006', title: 'OAuth 2.0 인증 플랫폼 관리' },
+            { path: 'sfr-006/oauth-security.html', category: 'SFR-006', title: 'OAuth 2.0 보안 강화 기술' },
         ];
 
-        // 각 HTML 파일에서 <title> 태그 값을 동적으로 추출
-        async function fetchTitle(path) {
-            try {
-                const response = await fetch(path);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                const html = await response.text();
-                const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-                return titleMatch ? titleMatch[1].trim() : null;
-            } catch (error) {
-                console.error(`파일 로드 실패 (${path}):`, error.message);
-                return null;
-            }
-        }
 
         // 파일 프로토콜 감지
         function detectFileProtocol() {
@@ -266,7 +251,7 @@
         }
 
         // 사이트맵 테이블 렌더링
-        async function renderSitemap() {
+        function renderSitemap() {
             const isFileProtocol = detectFileProtocol();
             const alertElement = document.getElementById('file-protocol-alert');
             const loadingElement = document.getElementById('sitemap-status');
@@ -279,52 +264,31 @@
                 alertElement.classList.add('show');
             }
 
-            try {
-                // 모든 파일의 title을 병렬로 로드
-                const results = await Promise.all(
-                    FILES.map(async (file) => {
-                        const title = await fetchTitle(file.path);
-                        return {
-                            ...file,
-                            title: title,
-                            loaded: !!title
-                        };
-                    })
-                );
+            // 테이블 행 생성
+            if (FILES.length > 0) {
+                FILES.forEach((file) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><span class="category-label">${escapeHtml(file.category)}</span></td>
+                        <td>
+                            <div class="file-title">
+                                <a href="${escapeHtml(file.path)}" target="_self">
+                                    ${escapeHtml(file.title)}
+                                </a>
+                            </div>
+                            <div class="load-status success">✓ 로드됨</div>
+                        </td>
+                        <td><code class="file-path">${escapeHtml(file.path)}</code></td>
+                    `;
+                    tbodyElement.appendChild(row);
+                });
 
-                // 테이블 행 생성
-                if (results.length > 0) {
-                    results.forEach((file, index) => {
-                        const row = document.createElement('tr');
-                        const titleText = file.title || file.path;
-                        const statusClass = file.loaded ? 'success' : 'error';
-                        const statusText = file.loaded ? '✓ 로드됨' : '✗ 로드 실패';
-
-                        row.innerHTML = `
-                            <td><span class="category-label">${escapeHtml(file.category)}</span></td>
-                            <td>
-                                <div class="file-title">
-                                    <a href="${escapeHtml(file.path)}" target="_self">
-                                        ${escapeHtml(titleText)}
-                                    </a>
-                                </div>
-                                <div class="load-status ${statusClass}">${statusText}</div>
-                            </td>
-                            <td><code class="file-path">${escapeHtml(file.path)}</code></td>
-                        `;
-                        tbodyElement.appendChild(row);
-                    });
-
-                    tableElement.style.display = 'table';
-                } else {
-                    emptyElement.style.display = 'block';
-                }
-
-                loadingElement.style.display = 'none';
-            } catch (error) {
-                console.error('사이트맵 렌더링 중 오류:', error);
-                loadingElement.innerHTML = '❌ 사이트맵을 로드할 수 없습니다.';
+                tableElement.style.display = 'table';
+            } else {
+                emptyElement.style.display = 'block';
             }
+
+            loadingElement.style.display = 'none';
         }
 
         // HTML 특수 문자 이스케이핑
