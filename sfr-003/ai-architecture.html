@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 도서 추천 서비스 — Hub & Spoke 아키텍처</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+    /* ============================================================
+       BASE & WRAPPER
+       ============================================================ */
+    body {
+        margin: 0;
+        padding: 40px 20px;
+        background: #E5E9F0;
+        font-family: 'Noto Sans KR', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .presentation-wrapper {
+        width: 100%;
+        max-width: 900px;
+        box-shadow: 0 8px 32px rgba(0,32,105,0.12);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .header {
+        background: #002069;
+        color: #fff;
+        padding: 24px 32px;
+    }
+    
+    .header h2 {
+        margin: 0 0 8px 0;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+    
+    .header p {
+        margin: 0;
+        font-size: 13px;
+        color: #96ACC0;
+    }
+
+    /* ============================================================
+       CANVAS & BACKGROUND
+       ============================================================ */
+    .canvas {
+        position: relative;
+        width: 900px;
+        height: 420px;
+        background-color: #F4F7FA;
+        /* 18px 간격의 연한 회색 점선 격자 패턴 */
+        background-image: radial-gradient(#E8ECF0 1.5px, transparent 1.5px);
+        background-size: 18px 18px;
+        overflow: hidden;
+    }
+
+    /* ============================================================
+       CONNECTION LINES (z-index: 1)
+       ============================================================ */
+    .spoke-line {
+        position: absolute;
+        left: 450px; /* 중앙 X */
+        top: 210px;  /* 중앙 Y */
+        height: 1px;
+        background: #B8CDD9;
+        transform-origin: left center;
+        z-index: 1;
+    }
+
+    /* 중심에서 각 원의 중심까지 연결되는 각도와 길이 (Math.atan2 계산) */
+    .line-l-top { width: 211px; transform: rotate(-148.6deg); }
+    .line-l-mid { width: 220px; transform: rotate(180deg); }
+    .line-l-bot { width: 211px; transform: rotate(148.6deg); }
+    .line-r-top { width: 206px; transform: rotate(-22.8deg); }
+    .line-r-bot { width: 206px; transform: rotate(22.8deg); }
+
+
+    /* ============================================================
+       DIRECTIONAL ARROWS
+       ============================================================ */
+    .dir-indicator {
+        position: absolute;
+        width: 100px;
+        text-align: center;
+        z-index: 5;
+    }
+    
+    .dir-label {
+        font-size: 11px;
+        color: #7C9DB5;
+        font-style: italic;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    .dir-arrow {
+        position: relative;
+        height: 1px;
+        background: #7C9DB5;
+        width: 100%;
+    }
+
+    .arrow-head-left {
+        position: absolute;
+        left: 0;
+        top: -3px;
+        width: 0;
+        height: 0;
+        border-top: 3.5px solid transparent;
+        border-bottom: 3.5px solid transparent;
+        border-right: 5px solid #7C9DB5;
+    }
+
+    .arrow-head-right {
+        position: absolute;
+        right: 0;
+        top: -3px;
+        width: 0;
+        height: 0;
+        border-top: 3.5px solid transparent;
+        border-bottom: 3.5px solid transparent;
+        border-left: 5px solid #7C9DB5;
+    }
+
+    /* 화살표 위치 */
+    .dir-left  { left: 290px; top: 165px; }
+    .dir-right { left: 510px; top: 165px; }
+
+
+    /* ============================================================
+       NODES (z-index: 10)
+       ============================================================ */
+    .node {
+        position: absolute;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        z-index: 10;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* 중앙 허브 노드 */
+    .node-hub {
+        width: 130px;
+        height: 130px;
+        left: 385px; /* 450 - 65 */
+        top: 145px;  /* 210 - 65 */
+        background: linear-gradient(180deg, #5B8DB8 0%, #2D5F85 100%);
+        border: 3px solid #FFFFFF;
+        box-shadow: 0 4px 20px rgba(45,95,133,0.35);
+        color: #FFFFFF;
+    }
+
+    .node-hub span {
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    /* 주변 스포크 노드 */
+    .node-spoke {
+        width: 100px;
+        height: 100px;
+        background: #FFFFFF;
+        border: 1.5px solid #A8C4D8;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .node-spoke:hover {
+        border-color: #3A6B8A;
+        box-shadow: 0 6px 18px rgba(58,107,138,0.25);
+        transform: scale(1.05);
+    }
+
+    .spoke-num {
+        font-size: 12px;
+        font-weight: 700;
+        color: #3A6B8A;
+        margin-bottom: 2px;
+        line-height: 1.4;
+    }
+
+    .spoke-desc {
+        font-size: 11px;
+        color: #5B7A8F;
+        line-height: 1.4;
+    }
+
+    /* 좌측 스포크 위치 (X: 중앙기준 -230~-180 반경) */
+    .l-top { left: 220px; top: 50px; }
+    .l-mid { left: 180px; top: 160px; }
+    .l-bot { left: 220px; top: 270px; }
+
+    /* 우측 스포크 위치 (X: 중앙기준 +190 반경) */
+    .r-top { left: 590px; top: 80px; }
+    .r-bot { left: 590px; top: 240px; }
+
+</style>
+</head>
+<body>
+
+<div class="presentation-wrapper">
+    <div class="header">
+        <h2>AI 도서 추천 서비스 — 구성요소 아키텍처</h2>
+        <p>SFR-003_3 — 서비스 이용자 및 기술 인프라 측면 허브앤스포크 다이어그램 (100% HTML Rendered)</p>
+    </div>
+    
+    <div class="canvas">
+        
+        <!-- [배경 선] 허브 중심(450, 210)에서 각 원의 중심을 향해 발사되는 선 -->
+        <div class="spoke-line line-l-top"></div>
+        <div class="spoke-line line-l-mid"></div>
+        <div class="spoke-line line-l-bot"></div>
+        <div class="spoke-line line-r-top"></div>
+        <div class="spoke-line line-r-bot"></div>
+
+        <!-- [방향 화살표] -->
+        <div class="dir-indicator dir-left">
+            <span class="dir-label">서비스 이용자 측면</span>
+            <div class="dir-arrow">
+                <div class="arrow-head-left"></div>
+            </div>
+        </div>
+
+        <div class="dir-indicator dir-right">
+            <span class="dir-label">기술 인프라 측면</span>
+            <div class="dir-arrow">
+                <div class="arrow-head-right"></div>
+            </div>
+        </div>
+
+        <!-- [중앙 허브] -->
+        <div class="node node-hub">
+            <span>AI 도서추천<br>서비스</span>
+        </div>
+
+        <!-- [좌측 스포크] 서비스 이용자 측면 -->
+        <div class="node node-spoke l-top">
+            <div class="spoke-num">AI 4</div>
+            <div class="spoke-desc">추천→웹뷰어<br>바로 연결</div>
+        </div>
+
+        <div class="node node-spoke l-mid">
+            <div class="spoke-num">AI 2</div>
+            <div class="spoke-desc">접근성 기반<br>추천 재정렬</div>
+        </div>
+
+        <div class="node node-spoke l-bot">
+            <div class="spoke-num">AI 3</div>
+            <div class="spoke-desc">이용 방식<br>기반 추천</div>
+        </div>
+
+        <!-- [우측 스포크] 기술 인프라 측면 -->
+        <div class="node node-spoke r-top">
+            <div class="spoke-num">AI 1</div>
+            <div class="spoke-desc">외부 AI<br>솔루션 연계</div>
+        </div>
+
+        <div class="node node-spoke r-bot">
+            <div class="spoke-num">AI 5</div>
+            <div class="spoke-desc">검색·열람 이력<br>데이터 축적</div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
