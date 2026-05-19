@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFR-003_2 수어 상담 양방향 서비스</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --blue-900:#002069;--blue-800:#003685;--blue-700:#285F80;
+  --blue-600:#3990B4;--blue-500:#37A0E9;--blue-400:#52B8E9;
+  --blue-300:#96ACC0;--blue-200:#DADEE4;--blue-100:#EEF1F5;
+  --red:#C00000;--green:#22AA33;
+  --gray-900:#1A1C23;--gray-700:#4F5B70;--gray-500:#7C8DA4;
+  --gray-300:#CAD1DB;--gray-100:#F4F5F7;--white:#FFFFFF;
+  --font:'Noto Sans KR','맑은 고딕',sans-serif;
+  --shadow-card:0 4px 16px rgba(0,32,105,.08);
+  --shadow-lg:0 8px 32px rgba(0,32,105,.12);
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:#E5E9F0;padding:40px 20px;color:var(--gray-700);line-height:1.5;}
+.document-shell{max-width:1100px;margin:0 auto;background:var(--white);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden;}
+.header{background:var(--blue-900);padding:30px 50px;color:#fff;}
+.header h1{font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-0.5px;}
+.header p{color:var(--blue-300);font-size:13px;}
+.content-area{padding:50px;}
+.section-title{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;color:var(--blue-900);margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid var(--blue-100);}
+.section-title i{color:var(--blue-500);}
+.rtc-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;}
+.rtc-card{background:var(--white);border:1px solid var(--blue-200);border-radius:var(--r-lg);padding:25px;box-shadow:var(--shadow-card);}
+.rtc-card.featured{border-color:var(--blue-500);background:#F8FAFC;}
+.rtc-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-weight:700;color:var(--blue-900);font-size:16px;}
+.rtc-header i{background:var(--blue-100);padding:8px;border-radius:8px;color:var(--blue-700);}
+.rtc-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.rtc-list li{display:flex;gap:10px;font-size:13px;color:var(--gray-700);align-items:flex-start;}
+.rtc-list li i{color:var(--green);flex-shrink:0;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="document-shell">
+  <div class="header">
+    <h1>05. 수어 상담 양방향 서비스</h1>
+    <p>SFR-003_2 — WebRTC 기반 브라우저 직접 녹화 및 스트리밍 상담 구조</p>
+  </div>
+  <div class="content-area">
+    <div class="section-title"><i data-lucide="video"></i> 수어 상담 양방향 서비스 (SFR-003_2)</div>
+    <p style="font-size:14px;margin-bottom:20px;color:var(--gray-500);">별도의 녹화 앱 설치 없이 브라우저 단에서 즉시 촬영이 가능한 WebRTC 기술을 추가 제안합니다.</p>
+    <div class="rtc-grid">
+      <div class="rtc-card">
+        <div class="rtc-header"><i data-lucide="camera"></i> 이용자 화면 (마이페이지)</div>
+        <ul class="rtc-list">
+          <li><i data-lucide="check-circle-2"></i><span><b>WebRTC 브라우저 직접 녹화:</b> PC웹캠, 모바일 카메라를 웹에서 즉시 구동하여 업로드 허들 제거</span></li>
+          <li><i data-lucide="check-circle-2"></i><span><b>실시간 튜토리얼 레이어:</b> 영상 촬영 시작 전, 수어 통역사가 안내하는 사용법 팝업 제공</span></li>
+          <li><i data-lucide="check-circle-2"></i><span><b>미리보기 및 재촬영:</b> 서버 전송 전 로컬에서 영상을 확인하고 즉시 재촬영하는 기능 지원</span></li>
+        </ul>
+      </div>
+      <div class="rtc-card featured">
+        <div class="rtc-header"><i data-lucide="headset"></i> 관리자(수어상담사) 환경</div>
+        <ul class="rtc-list">
+          <li><i data-lucide="check-circle-2"></i><span><b>대용량 스트리밍 플레이어:</b> 이용자가 올린 영상을 다운로드하지 않고 브라우저에서 즉시 스트리밍 확인</span></li>
+          <li><i data-lucide="check-circle-2"></i><span><b>하이브리드 답변 폼:</b> 수어 상담사가 웹캠으로 직접 답변을 녹화하거나 텍스트를 병행 입력 가능</span></li>
+          <li><i data-lucide="check-circle-2"></i><span><b>상담 상태 트래킹:</b> 미답변 장기 지연 건에 대한 대시보드 경고 알림(SLA 관리)</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>

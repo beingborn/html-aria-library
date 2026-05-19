@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SFR-003_1 접근성 웹뷰어 & DRM 연동</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --blue-900:#002069;--blue-800:#003685;--blue-700:#285F80;
+  --blue-600:#3990B4;--blue-500:#37A0E9;--blue-400:#52B8E9;
+  --blue-300:#96ACC0;--blue-200:#DADEE4;--blue-100:#EEF1F5;
+  --red:#C00000;--green:#22AA33;
+  --gray-900:#1A1C23;--gray-700:#4F5B70;--gray-500:#7C8DA4;
+  --gray-300:#CAD1DB;--gray-100:#F4F5F7;--white:#FFFFFF;
+  --font:'Noto Sans KR','맑은 고딕',sans-serif;
+  --shadow-card:0 4px 16px rgba(0,32,105,.08);
+  --shadow-lg:0 8px 32px rgba(0,32,105,.12);
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:#E5E9F0;padding:40px 20px;color:var(--gray-700);line-height:1.5;}
+.document-shell{max-width:1100px;margin:0 auto;background:var(--white);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden;}
+.header{background:var(--blue-900);padding:30px 50px;color:#fff;}
+.header h1{font-size:24px;font-weight:700;margin-bottom:8px;letter-spacing:-0.5px;}
+.header p{color:var(--blue-300);font-size:13px;}
+.content-area{padding:50px;}
+.section-title{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:700;color:var(--blue-900);margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid var(--blue-100);}
+.section-title i{color:var(--blue-500);}
+.epub-container{background:var(--blue-100);border-radius:var(--r-lg);padding:30px;border:1px solid var(--blue-200);}
+.epub-flex{display:flex;gap:20px;align-items:stretch;}
+.epub-main{flex:2;background:var(--white);border-radius:var(--r-md);padding:20px;box-shadow:var(--shadow-card);border-left:5px solid var(--blue-500);}
+.epub-main h3{color:var(--blue-900);font-size:16px;margin-bottom:15px;border-bottom:1px solid var(--blue-200);padding-bottom:10px;display:flex;align-items:center;gap:8px;}
+.epub-panels{display:flex;gap:15px;}
+.panel-blue{flex:1;background:var(--blue-100);padding:15px;border-radius:var(--r-sm);border:1px solid var(--blue-300);}
+.panel-orange{flex:1;background:#FFF8EE;padding:15px;border-radius:var(--r-sm);border:1px solid #F79646;}
+.panel-title-blue{font-weight:700;color:var(--blue-800);margin-bottom:8px;font-size:14px;}
+.panel-title-red{font-weight:700;color:var(--red);margin-bottom:8px;font-size:14px;}
+.panel-list{font-size:12px;color:var(--gray-700);list-style:inside;line-height:1.6;}
+.epub-mid{display:flex;flex-direction:column;justify-content:center;align-items:center;color:var(--blue-500);gap:4px;}
+.epub-mid span{font-size:11px;font-weight:700;}
+.epub-side{flex:1;display:flex;flex-direction:column;gap:20px;}
+.epub-block{background:var(--white);padding:15px;border-radius:var(--r-md);box-shadow:var(--shadow-card);text-align:center;border:1px solid var(--gray-300);}
+.epub-block.featured{border-color:var(--blue-500);}
+.epub-block h4{color:var(--blue-900);font-size:14px;margin-bottom:5px;}
+.epub-block p{font-size:12px;color:var(--gray-500);}
+.epub-tag{display:inline-block;background:var(--blue-100);color:var(--blue-700);font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700;margin-top:5px;}
+</style>
+</head>
+<body>
+<div class="document-shell">
+  <div class="header">
+    <h1>03. 접근성 웹뷰어 &amp; DRM 연동 아키텍처</h1>
+    <p>SFR-003_1 — EPUB.js 기반 무설치 뷰어 및 DRM 연동 구조</p>
+  </div>
+  <div class="content-area">
+    <div class="section-title"><i data-lucide="book-key"></i> 접근성 웹뷰어 &amp; DRM 연동 아키텍처 (SFR-003_1)</div>
+    <div class="epub-container">
+      <div class="epub-flex">
+        <div class="epub-main">
+          <h3><i data-lucide="laptop"></i>사용자 브라우저 환경 (무설치)</h3>
+          <div class="epub-panels">
+            <div class="panel-blue">
+              <div class="panel-title-blue">EPUB.js 코어 렌더링 엔진</div>
+              <ul class="panel-list">
+                <li>플러그인 없는 순수 HTML5/JS 렌더링</li>
+                <li>KWCAG 2.2 대비 스크린리더 완벽 호환</li>
+                <li>사용자 커스텀 (고대비, 글꼴 크기 등)</li>
+              </ul>
+            </div>
+            <div class="panel-orange">
+              <div class="panel-title-red">Web TTS &amp; 제어 모듈</div>
+              <ul class="panel-list">
+                <li>종 묶음(시리즈물) 자동 재생 처리</li>
+                <li>브라우저 내장 Web Speech API 연동</li>
+                <li>남/여 음성 및 배속 조절 UI</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="epub-mid">
+          <i data-lucide="arrow-left-right" style="width:32px;height:32px;"></i>
+          <span>스트리밍 통신</span>
+        </div>
+        <div class="epub-side">
+          <div class="epub-block featured">
+            <h4>도서관 DRM 시스템</h4>
+            <p>Fasoo / MarkAny 등 기존 솔루션</p>
+            <span class="epub-tag">실시간 복호화 전송</span>
+          </div>
+          <div class="epub-block">
+            <h4>미디어 스토리지</h4>
+            <p>암호화된 원본 EPUB 적재</p>
+            <span class="epub-tag">보안 저장소</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>
